@@ -1,0 +1,8 @@
+# Ignorar arquivos de banco de dados e chaves
+clientes.json
+clientes.enc
+cf2.ico
+__pycache__/
+build/
+dist/
+*.spec

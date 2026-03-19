@@ -1,0 +1,16 @@
+{
+    "Cliente Fictício A - Servidor Local (VPN)": {
+        "host": "26.10.20.30",
+        "port": "3306",
+        "user": "root",
+        "password": "senha_segura_123",
+        "database": "erp_cliente_a"
+    },
+    "Cliente Fictício B - Nuvem": {
+        "host": "db.clienteb.com.br",
+        "port": "3306",
+        "user": "suporte_ti",
+        "password": "senha_segura_456",
+        "database": "erp_cliente_b"
+    }
+}
