@@ -1,24 +1,22 @@
+import base64
+import hashlib
 from cryptography.fernet import Fernet
 
-# 1. Gera uma Chave Mestra única
-chave = Fernet.generate_key()
-print("GUARDE ESTA CHAVE! Você vai precisar colar ela no suporte.py:")
-print(f"Chave: {chave.decode()}\n")
+senha = input("Escolha uma senha: ")
 
-f = Fernet(chave)
+chave_fernet = base64.urlsafe_b64encode(hashlib.sha256(senha.encode()).digest())
 
-# 2. Lê o seu clientes.json atual com as senhas expostas
+f = Fernet(chave_fernet)
+
 try:
     with open('clientes.json', 'rb') as file:
         dados_originais = file.read()
 
-    # 3. Criptografa tudo
     dados_criptografados = f.encrypt(dados_originais)
 
-    # 4. Salva no novo arquivo criptografado ( .enc )
     with open('clientes.enc', 'wb') as file:
         file.write(dados_criptografados)
         
-    print("Sucesso! O arquivo criptografado 'clientes.enc' foi criado.")
+    print(f"Sucesso! Arquivo criptografado usando a senha: {senha}\nVocê precisará colar ela no PainelSuporte.py")
 except FileNotFoundError:
     print("Erro: O arquivo clientes.json não foi encontrado.")
