@@ -25,7 +25,7 @@ O sistema permite que técnicos executem manutenções no banco de dados (MySQL)
 
 1. **Clone o repositório:**
 ```bash
-git clone [https://github.com/nicolasrapp05/painel-suporte-TI](https://github.com/nicolasrapp05/painel-suporte-TI)
+git clone https://github.com/nicolasrapp05/painel-suporte-TI
 cd painel-suporte-TI
 ```
 
