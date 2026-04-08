@@ -101,7 +101,7 @@ class PainelSuporte(ctk.CTk):
         frame_top.pack(pady=10, padx=20, fill="x")
 
         ctk.CTkLabel(frame_top, text="1. Selecione o Cliente:", font=("Arial", 14, "bold")).pack(pady=(10, 0))
-        self.cb_cliente = ctk.CTkComboBox(frame_top, values=list(self.clientes.keys()))
+        self.cb_cliente = ctk.CTkComboBox(frame_top, values=sorted(self.clientes.keys()))
         self.cb_cliente.pack(pady=10, padx=20, fill="x")
         self.cb_cliente.bind("<KeyRelease>", self.filtrar_clientes)
 
@@ -164,20 +164,20 @@ class PainelSuporte(ctk.CTk):
             self.inputs_dinamicos[param["var_banco"]] = input_field
 
     def filtrar_clientes(self, event):
-        if event.keysym == 'Down':
+        if event.keysym in ['Down', 'Return']:
             self.cb_cliente._open_dropdown_menu()
             return
 
-        if event.keysym in ['Up', 'Left', 'Right', 'Return']:
+        if event.keysym in ['Up', 'Left', 'Right']:
             return
 
         texto_digitado = self.cb_cliente.get()
         texto_min = texto_digitado.lower()
         
         if texto_min == "":
-            clientes_filtrados = list(self.clientes.keys())
+            clientes_filtrados = sorted(self.clientes.keys())
         else:
-            clientes_filtrados = [cliente for cliente in self.clientes.keys() if texto_min in cliente.lower()]
+            clientes_filtrados = sorted([cliente for cliente in self.clientes.keys() if texto_min in cliente.lower()])
         
         if not clientes_filtrados:
             clientes_filtrados = ["Nenhum cliente encontrado..."]
@@ -379,7 +379,7 @@ class PainelSuporte(ctk.CTk):
                 with open('clientes.enc', 'wb') as file:
                     file.write(dados_criptografados)
 
-                self.cb_cliente.configure(values=list(self.clientes.keys()))
+                self.cb_cliente.configure(values=sorted(self.clientes.keys()))
                 self.cb_cliente.set(nome_cliente)
 
                 janela.destroy()
