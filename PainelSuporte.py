@@ -4,6 +4,7 @@ import pymysql
 from pymysql.constants import CLIENT
 import warnings
 import customtkinter as ctk
+from customtkinter import filedialog
 from CTkMessagebox import CTkMessagebox
 import base64
 import hashlib
@@ -70,7 +71,7 @@ class PainelSuporte(ctk.CTk):
             pass
 
         # COLOQUE A SENHA QUE ESCOLHEU PARA CRIPTOGRAFAR
-        self.minha_senha = "COLE_SUA_SENHA_AQUI" 
+        self.minha_senha = "cfinfohard" 
         self.chave_fernet = base64.urlsafe_b64encode(hashlib.sha256(self.minha_senha.encode()).digest())
 
         self.inputs_dinamicos = {}
@@ -107,11 +108,20 @@ class PainelSuporte(ctk.CTk):
         self.btn_novo_cliente = ctk.CTkButton(
             frame_top, 
             text="➕ Novo Cliente", 
-            fg_color="#2b2b2b",
-            hover_color="#3b3b3b",
+            fg_color="#1f538d",
+            hover_color="#14375e",
             command=self.abrir_janela_novo_cliente
         )
         self.btn_novo_cliente.pack(pady=(0, 10), padx=20, fill="x")
+
+        self.btn_exportar = ctk.CTkButton(
+            frame_top, 
+            text="📥 Exportar Clientes (JSON)", 
+            fg_color="#1f538d",
+            hover_color="#14375e",
+            command=self.exportar_json_clientes
+        )
+        self.btn_exportar.pack(pady=(0, 10), padx=20, fill="x")
 
         ctk.CTkLabel(frame_top, text="2. Selecione a Query:", font=("Arial", 14, "bold")).pack(pady=(10, 0))
         self.cb_rotina = ctk.CTkOptionMenu(frame_top, values=list(ROTINAS.keys()), command=self.gerar_campos_dinamicos)
@@ -380,6 +390,30 @@ class PainelSuporte(ctk.CTk):
 
         btn_salvar = ctk.CTkButton(janela, text="✔ Salvar Cliente", fg_color="#28a745", hover_color="#218838", font=("Arial", 14, "bold"), command=salvar_cliente)
         btn_salvar.pack(pady=20, padx=20, fill="x")
+
+    def exportar_json_clientes(self):
+        if not self.clientes or "Nenhum cliente encontrado" in self.clientes:
+            CTkMessagebox(master=self, title="Aviso", message="Não há clientes válidos para exportar.", icon="warning")
+            return
+
+        caminho_arquivo = filedialog.asksaveasfilename(
+            defaultextension=".json",
+            filetypes=[("Arquivo JSON", "*.json")],
+            title="Salvar lista de clientes como...",
+            initialfile="clientes_exportados.json"
+        )
+
+        if not caminho_arquivo:
+            return
+
+        try:
+            with open(caminho_arquivo, 'w', encoding='utf-8') as file:
+                json.dump(self.clientes, file, indent=4, ensure_ascii=False)
+            
+            CTkMessagebox(master=self, title="Sucesso", message=f"Arquivo JSON salvo com sucesso em:\n{caminho_arquivo}", icon="check")
+            
+        except Exception as e:
+            CTkMessagebox(master=self, title="Erro ao Exportar", message=f"Falha ao salvar o arquivo:\n\n{str(e)}", icon="cancel")
 
 if __name__ == "__main__":
     app = PainelSuporte()
