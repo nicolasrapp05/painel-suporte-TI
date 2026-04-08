@@ -7,9 +7,10 @@ O sistema permite que técnicos executem manutenções no banco de dados (MySQL)
 ## ✨ Funcionalidades Principais
 
 * **Arquitetura Extensível (Data-Driven UI):** O sistema possui um design "Plug and Play" orientado a dados. A interface principal e o motor de execução são totalmente desacoplados das regras de negócio. Para adicionar uma nova rotina/query no sistema, basta criar um novo bloco no dicionário de configuração, e a interface gerará os campos de input dinamicamente (Dynamic UI Generation) baseada nos parâmetros exigidos pelo SQL.
-* **Busca Inteligente de Clientes:** Dropdown com filtro em tempo real (autocomplete) para lidar facilmente com listas extensas de clientes.
+* **Busca Inteligente & Autocomplete:** Dropdown com filtro em tempo real organizado em ordem alfabética. O sistema permite a digitação contínua e utiliza atalhos inteligentes (`Enter` ou `Seta para Baixo`) para abrir a lista de resultados filtrados sem travar o teclado.
 * **Segurança Criptográfica (AES) Simplificada:** As credenciais não ficam expostas no código. O sistema utiliza a biblioteca `cryptography` (Fernet) combinada com derivação de chave (SHA-256 e Base64). Isso permite trancar e destrancar o arquivo `clientes.enc` usando uma senha mestre fixa, eliminando a necessidade de recompilar o executável a cada novo cliente adicionado.
-* **UX/UI Aprimorada:** Interface em Dark Mode nativo, inicialização perfeitamente centralizada no monitor do usuário e caixas de diálogo modais personalizadas (`CTkMessagebox`) que acompanham a janela principal.
+* **Backup e Exportação:** Funcionalidade de exportação da lista de clientes para formato **JSON**, permitindo backups rápidos ou conferência de dados via janela nativa do Windows Explorer.
+* **UX/UI:** Interface em Dark Mode nativo, inicialização perfeitamente centralizada em relação a janela principal e caixas de diálogo modais personalizadas (`CTkMessagebox`) que acompanham a janela principal.
 * **Validação de Inputs:** Sistema de prevenção de erros que bloqueia a execução de queries caso campos obrigatórios estejam vazios, fornecendo feedback visual imediato.
 * **Suporte a Conexões Legadas:** Configurado para suportar versões antigas do MySQL (`pymysql` configurado para compatibilidade com senhas pré-4.1) operando inclusive sobre túneis de VPN (ex: Radmin).
 
