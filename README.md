@@ -9,7 +9,7 @@ O sistema permite que técnicos executem manutenções no banco de dados (MySQL)
 * **Arquitetura Extensível (Data-Driven UI):** O sistema possui um design "Plug and Play" orientado a dados. A interface principal e o motor de execução são totalmente desacoplados das regras de negócio. Para adicionar uma nova rotina/query no sistema, basta criar um novo bloco no dicionário de configuração, e a interface gerará os campos de input dinamicamente (Dynamic UI Generation) baseada nos parâmetros exigidos pelo SQL.
 * **Busca Inteligente & Autocomplete:** Dropdown com filtro em tempo real organizado em ordem alfabética. O sistema permite a digitação contínua e utiliza atalhos inteligentes (`Enter` ou `Seta para Baixo`) para abrir a lista de resultados filtrados sem travar o teclado.
 * **Segurança Criptográfica (AES) Simplificada:** As credenciais não ficam expostas no código. O sistema utiliza a biblioteca `cryptography` (Fernet) combinada com derivação de chave (SHA-256 e Base64). Isso permite trancar e destrancar o arquivo `clientes.enc` usando uma senha mestre fixa, eliminando a necessidade de recompilar o executável a cada novo cliente adicionado.
-* **Backup e Exportação:** Funcionalidade de exportação da lista de clientes para formato **JSON**, permitindo backups rápidos ou conferência de dados via janela nativa do Windows Explorer.
+* **Gestão Completa de Clientes (Importar/Exportar):** A interface permite criar novos clientes manualmente ou geri-los em massa. É possível Exportar a lista atual para JSON (para backups) e Importar um ficheiro JSON. A importação encripta e substitui os dados automaticamente na hora, dispensando o uso de scripts externos.
 * **UX/UI:** Interface em Dark Mode nativo, inicialização perfeitamente centralizada em relação a janela principal e caixas de diálogo modais personalizadas (`CTkMessagebox`) que acompanham a janela principal.
 * **Validação de Inputs:** Sistema de prevenção de erros que bloqueia a execução de queries caso campos obrigatórios estejam vazios, fornecendo feedback visual imediato.
 * **Suporte a Conexões Legadas:** Configurado para suportar versões antigas do MySQL (`pymysql` configurado para compatibilidade com senhas pré-4.1) operando inclusive sobre túneis de VPN (ex: Radmin).
@@ -20,6 +20,7 @@ O sistema permite que técnicos executem manutenções no banco de dados (MySQL)
 * **CustomTkinter & CTkMessagebox:** Para a interface gráfica (GUI) e modais de aviso.
 * **PyMySQL:** Para comunicação com o banco de dados e execução de *Multi-Statements*.
 * **Cryptography & Hashlib:** Para encriptação simétrica e derivação segura de chaves.
+* **JSON:** Para armazenamento temporário e processos de importação/exportação.
 * **PyInstaller:** Para compilação do projeto em um executável `.exe` standalone.
 
 ## 📦 Como Instalar e Rodar Localmente
@@ -45,9 +46,10 @@ pip install customtkinter CTkMessagebox pymysql cryptography
 ```bash
 python criptografar.py
 ```
-* O script gerará um arquivo `clientes.enc` trancado com a sua senha. (Você só precisa repetir este passo quando adicionar novos clientes no JSON, sem precisar alterar o código do painel novamente!).
+* O script gerará um arquivo `clientes.enc` trancado com a sua senha.
+* Ou, clique em "📤 Importar Clientes (JSON)" para carregar uma lista JSON pronta. O sistema irá gerar o ficheiro clientes.enc encriptado automaticamente!
 
-5. **Inicie o aplicativo:**
+1. **Inicie o aplicativo:**
 ```bash
 python PainelSuporte.py
 ```
