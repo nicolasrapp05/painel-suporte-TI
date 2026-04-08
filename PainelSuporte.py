@@ -71,7 +71,7 @@ class PainelSuporte(ctk.CTk):
             pass
 
         # COLOQUE A SENHA QUE ESCOLHEU PARA CRIPTOGRAFAR
-        self.minha_senha = "COLE_SUA_SENHA_AQUI" 
+        self.minha_senha = "cfinfohard" 
         self.chave_fernet = base64.urlsafe_b64encode(hashlib.sha256(self.minha_senha.encode()).digest())
 
         self.inputs_dinamicos = {}
@@ -124,6 +124,15 @@ class PainelSuporte(ctk.CTk):
             command=self.exportar_json_clientes
         )
         self.btn_exportar.pack(pady=(0, 10), padx=20, fill="x")
+
+        self.btn_importar = ctk.CTkButton(
+            frame_top, 
+            text="📤 Importar Clientes (JSON)", 
+            fg_color="#1f538d",
+            hover_color="#14375e",
+            command=self.importar_json_clientes
+        )
+        self.btn_importar.pack(pady=(0, 10), padx=20, fill="x")
 
         ctk.CTkLabel(frame_top, text="2. Selecione a Query:", font=("Arial", 14, "bold")).pack(pady=(10, 0))
         self.cb_rotina = ctk.CTkOptionMenu(frame_top, values=list(ROTINAS.keys()), command=self.gerar_campos_dinamicos)
@@ -432,6 +441,51 @@ class PainelSuporte(ctk.CTk):
             
         except Exception as e:
             CTkMessagebox(master=self, title="Erro ao Exportar", message=f"Falha ao salvar o arquivo:\n\n{str(e)}", icon="cancel")
+
+    def importar_json_clientes(self):
+        pergunta = CTkMessagebox(
+            master=self,
+            title="Confirmar Importação",
+            message="A importação irá SUBSTITUIR todos os clientes atuais pelo conteúdo do arquivo selecionado.\n\nDeseja continuar?",
+            icon="warning",
+            option_1="Cancelar",
+            option_2="Substituir",
+            button_width=100
+        )
+
+        if pergunta.get() != "Substituir":
+            return
+
+        caminho_arquivo = filedialog.askopenfilename(
+            title="Selecione o arquivo JSON de clientes",
+            filetypes=[("Arquivo JSON", "*.json")]
+        )
+
+        if not caminho_arquivo:
+            return
+
+        try:
+            with open(caminho_arquivo, 'r', encoding='utf-8') as file:
+                novos_clientes = json.load(file)
+
+            if not isinstance(novos_clientes, dict):
+                raise ValueError("O arquivo JSON não está no formato esperado (Dicionário).")
+
+            dados_json = json.dumps(novos_clientes, indent=4).encode('utf-8')
+            f = Fernet(self.chave_fernet)
+            dados_criptografados = f.encrypt(dados_json)
+
+            with open('clientes.enc', 'wb') as file:
+                file.write(dados_criptografados)
+
+            self.clientes = novos_clientes
+            self.cb_cliente.configure(values=sorted(self.clientes.keys()))
+            self.cb_cliente.set("")
+            
+            CTkMessagebox(master=self, title="Sucesso", message="Lista de clientes importada e criptografada com sucesso!", icon="check")
+
+        except Exception as e:
+            CTkMessagebox(master=self, title="Erro na Importação", message=f"Falha ao importar arquivo:\n\n{str(e)}", icon="cancel")
 
 if __name__ == "__main__":
     app = PainelSuporte()
