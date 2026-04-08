@@ -69,18 +69,18 @@ class PainelSuporte(ctk.CTk):
         except:
             pass
 
+        # COLOQUE A SENHA QUE ESCOLHEU PARA CRIPTOGRAFAR
+        self.minha_senha = "COLE_SUA_SENHA_AQUI" 
+        self.chave_fernet = base64.urlsafe_b64encode(hashlib.sha256(self.minha_senha.encode()).digest())
+
         self.inputs_dinamicos = {}
 
         self.carregar_clientes()
         self.criar_interface()
 
     def carregar_clientes(self):
-        # COLOQUE A SENHA QUE ESCOLHEU PARA CRIPTOGRAFAR
-        SENHA = "cole_aqui"
-        CHAVE_MESTRA = base64.urlsafe_b64encode(hashlib.sha256(SENHA.encode()).digest())
-
         try:
-            f = Fernet(CHAVE_MESTRA)
+            f = Fernet(self.chave_fernet)
             
             with open('clientes.enc', 'rb') as file:
                 dados_criptografados = file.read()
@@ -90,11 +90,12 @@ class PainelSuporte(ctk.CTk):
             self.clientes = json.loads(dados_descriptografados)
             
         except Exception as e:
-            CTkMessagebox(title="Erro Técnico Detalhado", master=self, message=f"O motivo exato do erro foi:\n\n{str(e)}", icon="cancel")
+            self.update()
+            erro_msg = str(e) if str(e) else "Senha incorreta ou arquivo corrompido (InvalidToken)."
+            CTkMessagebox(master=self, title="Erro Técnico Detalhado", message=f"O motivo exato do erro foi:\n\n{erro_msg}", icon="cancel")
             self.clientes = {"Nenhum cliente encontrado": {}}
 
     def criar_interface(self):
-        # --- SEÇÃO: CLIENTE E ROTINA ---
         frame_top = ctk.CTkFrame(self)
         frame_top.pack(pady=10, padx=20, fill="x")
 
@@ -103,19 +104,25 @@ class PainelSuporte(ctk.CTk):
         self.cb_cliente.pack(pady=10, padx=20, fill="x")
         self.cb_cliente.bind("<KeyRelease>", self.filtrar_clientes)
 
+        self.btn_novo_cliente = ctk.CTkButton(
+            frame_top, 
+            text="➕ Novo Cliente", 
+            fg_color="#2b2b2b",
+            hover_color="#3b3b3b",
+            command=self.abrir_janela_novo_cliente
+        )
+        self.btn_novo_cliente.pack(pady=(0, 10), padx=20, fill="x")
+
         ctk.CTkLabel(frame_top, text="2. Selecione a Query:", font=("Arial", 14, "bold")).pack(pady=(10, 0))
         self.cb_rotina = ctk.CTkOptionMenu(frame_top, values=list(ROTINAS.keys()), command=self.gerar_campos_dinamicos)
         self.cb_rotina.pack(pady=10, padx=20, fill="x")
 
-        # --- SEÇÃO: CAMPOS DINÂMICOS ---
         self.frame_campos = ctk.CTkFrame(self)
         self.frame_campos.pack(pady=10, padx=20, fill="x")
         
-        # --- SEÇÃO: BOTÃO DE EXECUÇÃO ---
         self.btn_executar = ctk.CTkButton(self, text="▶ EXECUTAR QUERY", fg_color="darkred", hover_color="red", height=40, font=("Arial", 14, "bold"), command=self.executar_query)
         self.btn_executar.pack(pady=10, padx=20, fill="x")
 
-        # --- SEÇÃO: LOG DE SAÍDA ---
         ctk.CTkLabel(self, text="Resultado da Execução:").pack(pady=(10, 0))
         self.txt_log = ctk.CTkTextbox(self, height=150)
         self.txt_log.pack(pady=5, padx=20, fill="both", expand=True)
@@ -197,13 +204,12 @@ class PainelSuporte(ctk.CTk):
             icon="warning", 
             option_1="Não", 
             option_2="Sim",
-            button_width=100  # Trava a largura dos botões para não esticarem
+            button_width=100
         )
 
         if msg.get() != "Sim":
             return
 
-        # 1. ESTADO: RODANDO (AZUL)
         self.btn_executar.configure(text="⏳ RODANDO QUERY...", text_color="white", text_color_disabled="white", fg_color="#1f538d", hover_color="#14375e", state="disabled")
         self.update()
 
@@ -229,7 +235,6 @@ class PainelSuporte(ctk.CTk):
                 
             cabecalho_sql += f"set @{var_nome} = '{valor_digitado}';\n"
 
-        # Conecta no banco e executa
         cred = self.clientes[cliente_nome]
         try:
             conn = pymysql.connect(
@@ -267,7 +272,6 @@ class PainelSuporte(ctk.CTk):
             self.log(f"\n>>> SUCESSO! ({linhas_afetadas} linhas alteradas no banco)")
             self.log(f"Resultado: {mensagem_final}")
 
-            # 2. ESTADO: SUCESSO (VERDE)
             self.btn_executar.configure(text="✔ QUERY EXECUTADA!", text_color="white", fg_color="#28a745", hover_color="#218838")
 
         except Exception as e:
@@ -279,11 +283,103 @@ class PainelSuporte(ctk.CTk):
                 cursor.close()
                 conn.close()
 
-            # 3. ESTADO: RESET
             def resetar_botao():
                 self.btn_executar.configure(text="▶ EXECUTAR QUERY", fg_color="darkred", hover_color="red", state="normal")
             
             self.after(2500, resetar_botao)
+    
+    def abrir_janela_novo_cliente(self):
+        janela = ctk.CTkToplevel(self)
+        janela.title("Adicionar Novo Cliente")
+        
+        try:
+            janela.iconbitmap("icon.ico")
+        except:
+            pass
+
+        largura_janela = 400
+        altura_janela = 600
+
+        self.update_idletasks()
+
+        x_painel = self.winfo_x()
+        y_painel = self.winfo_y()
+        largura_painel = self.winfo_width()
+        altura_painel = self.winfo_height()
+
+        pos_x = x_painel + int((largura_painel / 2) - (largura_janela / 2))
+        pos_y = y_painel + int((altura_painel / 2) - (altura_janela / 2))
+
+        janela.geometry(f"{largura_janela}x{altura_janela}+{pos_x}+{pos_y}")
+        
+        janela.transient(self)
+        janela.grab_set()
+
+        campos = {}
+
+        config_campos = [
+            ("Nome do Cliente (ex: 200.14 - Papel e CIA)", "nome"),
+            ("Host (IP ou endereço)", "host"),
+            ("Porta (ex: 3306)", "port"),
+            ("Usuário", "user"),
+            ("Senha", "password"),
+            ("Nome do Banco de Dados", "database")
+        ]
+
+        ctk.CTkLabel(janela, text="Dados de Conexão MySQL:", font=("Arial", 16, "bold")).pack(pady=20)
+
+        for label_texto, chave in config_campos:
+            ctk.CTkLabel(janela, text=label_texto, anchor="w").pack(padx=20, fill="x")
+            
+            show_char = "*" if chave == "password" else ""
+            entry = ctk.CTkEntry(janela, show=show_char)
+            entry.pack(padx=20, pady=(0, 10), fill="x")
+            
+            campos[chave] = entry
+
+        def salvar_cliente():
+            for chave, entry in campos.items():
+                if not entry.get().strip():
+                    CTkMessagebox(master=janela, title="Aviso", message="Preencha todos os campos!", icon="warning")
+                    return
+
+            nome_cliente = campos["nome"].get().strip()
+
+            if nome_cliente in self.clientes:
+                CTkMessagebox(master=janela, title="Aviso", message="Já existe um cliente com este nome!", icon="warning")
+                return
+
+            dados_conexao = {
+                "host": campos["host"].get().strip(),
+                "port": campos["port"].get().strip(),
+                "user": campos["user"].get().strip(),
+                "password": campos["password"].get().strip(),
+                "database": campos["database"].get().strip()
+            }
+
+            try:
+                self.clientes[nome_cliente] = dados_conexao
+
+                dados_json = json.dumps(self.clientes, indent=4).encode('utf-8')
+
+                f = Fernet(self.chave_fernet)
+
+                dados_criptografados = f.encrypt(dados_json)
+
+                with open('clientes.enc', 'wb') as file:
+                    file.write(dados_criptografados)
+
+                self.cb_cliente.configure(values=list(self.clientes.keys()))
+                self.cb_cliente.set(nome_cliente)
+
+                janela.destroy()
+                CTkMessagebox(master=self, title="Sucesso", message=f"Cliente '{nome_cliente}' salvo com segurança!", icon="check")
+
+            except Exception as e:
+                CTkMessagebox(master=janela, title="Erro ao Salvar", message=f"Erro técnico:\n\n{str(e)}", icon="cancel")
+
+        btn_salvar = ctk.CTkButton(janela, text="✔ Salvar Cliente", fg_color="#28a745", hover_color="#218838", font=("Arial", 14, "bold"), command=salvar_cliente)
+        btn_salvar.pack(pady=20, padx=20, fill="x")
 
 if __name__ == "__main__":
     app = PainelSuporte()
