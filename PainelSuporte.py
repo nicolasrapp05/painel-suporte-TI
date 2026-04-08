@@ -71,7 +71,7 @@ class PainelSuporte(ctk.CTk):
             pass
 
         # COLOQUE A SENHA QUE ESCOLHEU PARA CRIPTOGRAFAR
-        self.minha_senha = "cfinfohard" 
+        self.minha_senha = "COLE_SUA_SENHA_AQUI" 
         self.chave_fernet = base64.urlsafe_b64encode(hashlib.sha256(self.minha_senha.encode()).digest())
 
         self.inputs_dinamicos = {}
