@@ -71,7 +71,7 @@ class PainelSuporte(ctk.CTk):
             pass
 
         # COLOQUE A SENHA QUE ESCOLHEU PARA CRIPTOGRAFAR
-        self.minha_senha = "cfinfohard" 
+        self.minha_senha = "COLE_SUA_SENHA_AQUI" 
         self.chave_fernet = base64.urlsafe_b64encode(hashlib.sha256(self.minha_senha.encode()).digest())
 
         self.inputs_dinamicos = {}
@@ -101,9 +101,11 @@ class PainelSuporte(ctk.CTk):
         frame_top.pack(pady=10, padx=20, fill="x")
 
         ctk.CTkLabel(frame_top, text="1. Selecione o Cliente:", font=("Arial", 14, "bold")).pack(pady=(10, 0))
-        self.cb_cliente = ctk.CTkComboBox(frame_top, values=sorted(self.clientes.keys()))
+        self.cb_cliente = ctk.CTkComboBox(frame_top, values=sorted(self.clientes.keys()), command=self.ao_selecionar_cliente)
         self.cb_cliente.pack(pady=10, padx=20, fill="x")
         self.cb_cliente.bind("<KeyRelease>", self.filtrar_clientes)
+        self.cb_cliente.bind("<Button-1>", self.selecionar_texto_cliente)
+        self.cb_cliente.bind("<FocusIn>", self.selecionar_texto_cliente)
 
         self.btn_novo_cliente = ctk.CTkButton(
             frame_top, 
@@ -164,11 +166,11 @@ class PainelSuporte(ctk.CTk):
             self.inputs_dinamicos[param["var_banco"]] = input_field
 
     def filtrar_clientes(self, event):
-        if event.keysym in ['Down', 'Return']:
-            self.cb_cliente._open_dropdown_menu()
-            return
-
-        if event.keysym in ['Up', 'Left', 'Right']:
+        teclas_ignoradas = ['Up', 'Down', 'Left', 'Right', 'Return', 'Shift_L', 'Shift_R', 'Control_L', 'Control_R', 'Caps_Lock', 'Tab', 'Alt_L', 'Alt_R']
+        
+        if event.keysym in teclas_ignoradas:
+            if event.keysym in ['Down', 'Return']:
+                self.cb_cliente._open_dropdown_menu()
             return
 
         texto_digitado = self.cb_cliente.get()
@@ -183,6 +185,22 @@ class PainelSuporte(ctk.CTk):
             clientes_filtrados = ["Nenhum cliente encontrado..."]
             
         self.cb_cliente.configure(values=clientes_filtrados)
+        
+        self.cb_cliente.set(texto_digitado)
+        self.cb_cliente._entry.icursor("end")
+
+    def selecionar_texto_cliente(self, event=None):
+        def selecionar():
+            try:
+                self.cb_cliente._entry.select_range(0, "end")
+                self.cb_cliente._entry.icursor("end")
+            except:
+                pass
+
+        self.after(50, selecionar)
+
+    def ao_selecionar_cliente(self, escolha):
+        self.focus_set()
 
     def log(self, mensagem):
         self.txt_log.insert("end", mensagem + "\n")
